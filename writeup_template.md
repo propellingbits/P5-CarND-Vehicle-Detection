@@ -141,7 +141,7 @@ find_cars method in lesson # 34 brings in big improvement. Instead of doing HOG 
 ### Video Implementation
 
 ####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video_output.mp4)[](./test_video_output.mp4) [](./project_video_2 output.mp4)
+Here's a [first link to my video result](./project_video_output.mp4) , [second link for test video](./test_video_output.mp4) , [and a third link (combining p4 & p5 videos) ](./project_video_2_output.mp4)
 
 
 ####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
