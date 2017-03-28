@@ -172,5 +172,9 @@ I recorded the positions of positive detections in each frame of the video. For 
 
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
+Ryan's video really put me on track. I did not struggle much. There is some mismatch between the code that he has shown and lessons code. Like find_cars method in lesson is not returning heat map. Lesson code was also crashing because there was no object detection so I added a check. Couple more issues.
+
+I have some false positives. I would love to get rid of them. Also, I like to stablize their appearance. They are little bit unstable now. Ryan mentioned to preserve the location of boxes for 8-10 frames. I would like to try that.
+
 John chen's videos from both p4 and p5 are big inspirations. I will be working on to get something mind blowing like that. 
 
