@@ -148,9 +148,20 @@ Here's a [link to my video result](./project_video_output.mp4)[](./test_video_ou
 
 Please refer to following methods in cell # 84.
 
+```
+for img_src in example_images:
+    img = mpimg.imread(img_src)
+    out_img, heat_map = find_cars(img=img, scale=scale)
+    labels = label(heat_map)
+    # draw bounding boxes on a copy of the image
+    draw_img = draw_labeled_bboxes(np.copy(img), labels)
+    out_images.append(draw_img)
+    out_images.append(heat_map)
+```
+
 I recorded the positions of positive detections in each frame of the video. For more details, please refer to find_cars method at line # 87 (I just noticed a small enhancement here. There is no need to draw rectangle in this method and return an image). I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap. I used draw_labeled_bboxes to draw thresholded labels on the image.  
 
-### Before and after images of appling threshold on labels:
+### Before and after images of applying threshold on labels:
 
 ![alt text][image12] ![alt text][image13]
 
