@@ -23,6 +23,13 @@ The goals / steps of this project are the following:
 [image6]: ./examples/labels_map.png
 [image7]: ./examples/output_bboxes.png
 [video1]: ./project_video.mp4
+[image8]: ./examples/car-notcar.png
+[image9]: ./examples/car-notcar-YCrCb.png
+[image10]: ./examples/sliding-win-search-1.png
+[image11]: ./examples/heat-maps.png
+[image12]: ./examples/before-label.png
+[image13]: ./examples/after-label.png
+
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
 ###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -38,64 +45,114 @@ You're reading it!
 
 ####1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
-The code for this step is contained in the first code cell of the IPython notebook (or in lines # through # of the file called `some_file.py`).  
+The code for this step is contained in the code cell # 20 of my IPython notebook.  
 
 I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
 
-![alt text][image1]
+![alt text][image8]
 
-I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
+I then explored different color spaces and different parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the output looks like. Parameters were altered in cell # 91.
 
-Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
+Here is an example using the `YCrCb` color space and HOG parameters of `orientations=6`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
 
 
-![alt text][image2]
+![alt text][image9]
 
 ####2. Explain how you settled on your final choice of HOG parameters.
 
-I tried various combinations of parameters and...
+I have not settled on params yet. It is a journey. There is still a lot pending to achieve. The current output seems to be reasonably presentable so I thought of stopping my experiments and proceed with project submission. 
 
+RGB images achieved test accuracy of 96% while YCrCb images achieved it little over 99% so no debate about which one to choose. We choose quality of results over training time.
+
+I have listed down params for both RGB and YcrCb images below along with my comment which explains reasoning for choosen values -
+```
+color_space = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+orient = 9 # as per HOG paper, it works until this limit
+pix_per_cell = 8
+cell_per_block = 2
+hog_channel = 'ALL' # Can be 0, 1, 2, or "ALL" . Works better at 'all'
+spatial_size = (32, 32) # Spatial binning dimensions
+hist_bins = 32    # Number of histogram bins
+spatial_feat = True # Spatial features on or off
+hist_feat = True # Histogram features on or off
+hog_feat = True # HOG features on or off
+y_start_stop = [None, None] # Min and max in y to search in slide_window()
+
+Result-
+162.09003233909607  seconds to train a classifier...
+Using: 9 orientations 8 pixels per cell and 2 cells per block
+Feature vector length: 8460
+55.07 Seconds to train SVC...
+Test Accuracy of SVC =  0.9927
+```
+
+```
+color_space = 'RGB' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+orient = 6
+pix_per_cell = 8
+cell_per_block = 2
+hog_channel = 0 # Can be 0, 1, 2, or "ALL"
+spatial_size = (16, 16) # Spatial binning dimensions
+hist_bins = 16    # Number of histogram bins
+spatial_feat = True # Spatial features on or off
+hist_feat = True # Histogram features on or off
+hog_feat = True # HOG features on or off
+y_start_stop = [None, None] # Min and max in y to search in slide_window()
+
+Result-
+71.78193712234497  seconds to train a classifier...
+Using: 6 orientations 8 pixels per cell and 2 cells per block
+Feature vector length: 1992
+12.88 Seconds to train SVC...
+Test Accuracy of SVC =  0.9696
+```
 ####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
-I trained a linear SVM using...
+Please refer to code cell # 96 in my notebook for code location.
 
+Steps for training a classifier -
+1. We first convert an image to selected color space
+2. Then we extract spatial and histogram features
+3. At this step, we take out the HOG features
+4. The above order must be maintained through out the entire pipeline otherwise
+   you will see unexpected results
+5. Once all extraction is done then we concatenate all of it together and return     it back to caller
+6. At this point, we create vertical and horizontal arrays for features and          labels set
+7. At the very end, we call svc.fit(x_train, y_train) to create a classifier
 ###Sliding Window Search
 
 ####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
+Please refer to cell numbers - 55, 73 and 83
 
-![alt text][image3]
+We tried a lot of parameteres and ultimately settled on which gave us acceptable results under faster times. The approach that we took is straight from lesson # 31. Using HOG means taking small blocks of images and searching for it across the defined area in the search window. We are also ignoring upper half of search window as cars are not yet flying :-). This also gave us speed bump. 
+
+![alt text][image10]
 
 ####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
+Most of our approaches are straight from Ryan's youtube video.
 
-![alt text][image4]
+find_cars method in lesson # 34 brings in big improvement. Instead of doing HOG transformation for each scanned part on search window, we are converting the whole target image at the beginning.
+
+![alt text][image11]
 ---
 
 ### Video Implementation
 
 ####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./project_video_output.mp4)[](./test_video_output.mp4) [](./project_video_2 output.mp4)
 
 
 ####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
+Please refer to following methods in cell # 84.
 
-Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
+I recorded the positions of positive detections in each frame of the video. For more details, please refer to find_cars method at line # 87 (I just noticed a small enhancement here. There is no need to draw rectangle in this method and return an image). I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap. I used draw_labeled_bboxes to draw thresholded labels on the image.  
 
-### Here are six frames and their corresponding heatmaps:
+### Before and after images of appling threshold on labels:
 
-![alt text][image5]
-
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
-![alt text][image6]
-
-### Here the resulting bounding boxes are drawn onto the last frame in the series:
-![alt text][image7]
-
+![alt text][image12] ![alt text][image13]
 
 
 ---
@@ -104,5 +161,5 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+John chen's videos from both p4 and p5 are big inspirations. I will be working on to get something mind blowing like that. 
 
